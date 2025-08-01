@@ -1,26 +1,23 @@
 FROM php:8.2-apache
 
-# Instalar extensiones necesarias
+# Instalar dependencias necesarias
 RUN apt-get update && apt-get install -y \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip unzip git curl \
-    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
+    libicu-dev \
+    unzip \
+    git \
+    zip \
+    libzip-dev \
+    && docker-php-ext-install intl pdo pdo_mysql zip
 
-# Copiar el código al contenedor
-COPY . /var/www/html/
+# Copiar archivos del proyecto
+COPY . /var/www/html
 
-# Habilitar reescritura para CakePHP
+# Dar permisos a CakePHP
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+# Habilitar mod_rewrite de Apache (importante para CakePHP)
 RUN a2enmod rewrite
-RUN service apache2 restart
 
-# Configurar permisos correctos
-RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
-
-# Configurar DocumentRoot
-WORKDIR /var/www/html
-
-EXPOSE 80
+# Configuración para que Apache trabaje con CakePHP
+COPY ./apache.conf /etc/apache2/sites-available/000-default.conf
