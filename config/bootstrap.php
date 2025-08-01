@@ -46,10 +46,6 @@ use Cake\Mailer\TransportFactory;
 use Cake\Routing\Router;
 use Cake\Utility\Security;
 
-use Dotenv\Dotenv;
-
-$dotenv = Dotenv::createImmutable(ROOT);
-$dotenv->safeLoad();
 /*
  * See https://github.com/josegonzalez/php-dotenv for API details.
  *

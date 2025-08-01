@@ -55,13 +55,12 @@ return function (RouteBuilder $routes): void {
          * its action called 'display', and we pass a param to select the view file
          * to use (in this case, templates/Pages/home.php)...
          */
-        $builder->connect('/', ['controller' => 'Users', 'action' => 'dashboard']);
-$builder->connect('/users/mostrarQr', ['controller' => 'Users', 'action' => 'mostrarQr']);
-$builder->connect('/users/deposit', ['controller' => 'Users', 'action' => 'deposit']);
+        $builder->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
+
         /*
          * ...and connect the rest of 'Pages' controller's URLs.
          */
-     
+        $builder->connect('/pages/*', 'Pages::display');
 
         /*
          * Connect catchall routes for all controllers.
