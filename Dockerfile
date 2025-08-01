@@ -32,3 +32,4 @@ RUN a2enmod rewrite
 COPY ./apache.conf /etc/apache2/sites-available/000-default.conf
 
 RUN docker-php-ext-install intl pdo pdo_mysql zip
+RUN docker-php-ext-install pdo pdo_mysql
