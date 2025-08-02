@@ -27,3 +27,9 @@ RUN chmod -R 755 .
 
 # Exponer puerto 80
 EXPOSE 80
+
+# Instalar Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Ejecutar composer install dentro del contenedor
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader

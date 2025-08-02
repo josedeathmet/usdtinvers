@@ -56,7 +56,9 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
     {
         parent::bootstrap();
 
+         if (PHP_SAPI === 'cli') {
         $this->addPlugin('Bake');
+    }
         $this->addPlugin('Migrations');
     }
 
