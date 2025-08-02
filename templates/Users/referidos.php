@@ -14,7 +14,7 @@
       id="enlaceReferido"
       type="text"
       readonly
-      value="https://inversion-production.up.railway.app/users/register?ref=<?= h($user->ref_code) ?>"
+      value="https://usdtinvers-production.up.railway.app/users/register?ref=<?= h($user->ref_code) ?>"
       class="flex-1 bg-[#2a2a2a] text-white border border-[#333] rounded-lg p-2 text-sm"
     />
 
