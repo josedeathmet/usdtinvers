@@ -125,6 +125,72 @@
   100% { transform: translateY(0px); }
 }
 </style>
+<script>
+console.log("✅ Script cargado");
+
+document.addEventListener("DOMContentLoaded", function () {
+    const flashSuccess = document.querySelector(".message.success");
+    const flashError = document.querySelector(".message.error");
+
+    if (!flashSuccess && !flashError) {
+        console.log("❌ No hay mensajes flash en el DOM.");
+        return;
+    }
+
+    let mensaje = null;
+    let tipo = null;
+
+    if (flashSuccess && flashSuccess.innerText.trim() !== "") {
+        mensaje = flashSuccess.innerText.trim();
+        tipo = "success";
+    } else if (flashError && flashError.innerText.trim() !== "") {
+        mensaje = flashError.innerText.trim();
+        tipo = "error";
+    }
+
+    if (mensaje && tipo) {
+        console.log("⚡ Mostrando mensaje:", mensaje);
+
+        const overlay = document.createElement("div");
+        overlay.style.position = "fixed";
+        overlay.style.top = "0";
+        overlay.style.left = "0";
+        overlay.style.width = "100%";
+        overlay.style.height = "100%";
+        overlay.style.backgroundColor = "rgba(0, 0, 0, 0.95)";
+        overlay.style.display = "flex";
+        overlay.style.justifyContent = "center";
+        overlay.style.alignItems = "center";
+        overlay.style.zIndex = "9999";
+
+        const modal = document.createElement("div");
+        modal.style.background = "#111";
+        modal.style.color = "#fff";
+        modal.style.padding = "30px";
+        modal.style.borderRadius = "12px";
+        modal.style.boxShadow = "0 0 25px rgba(0,0,0,0.8)";
+        modal.style.textAlign = "center";
+        modal.style.maxWidth = "90%";
+        modal.style.fontFamily = "Arial, sans-serif";
+
+        const title = tipo === "success" ? "¡Ganancia Cuantificada!" : "⚠️ Aviso Importante";
+        const buttonColor = tipo === "success" ? "#28a745" : "#dc3545";
+
+        modal.innerHTML = `
+            <h2 style="margin-bottom: 15px;">${title}</h2>
+            <p style="font-size: 18px;">${mensaje}</p>
+            <button style="margin-top: 25px; padding: 10px 25px; background: ${buttonColor}; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">Aceptar</button>
+        `;
+
+        modal.querySelector("button").addEventListener("click", function () {
+            document.body.removeChild(overlay);
+        });
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+    }
+});
+</script>
 
 
 </body>
