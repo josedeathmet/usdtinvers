@@ -181,7 +181,7 @@ $this->Authentication->addUnauthenticatedActions(['deposit']);
 
 
 
-    // Llamar al microservicio
+  
    
 
     $user = $this->Users->get($identity->getIdentifier());
@@ -236,7 +236,7 @@ public function deposit()
         $user->investment_fund += $amount;
         $this->Users->save($user);
 
-        // ✅ Aquí se llama la función de referido
+        
         $this->recompensarReferidos($userId, $amount);
 
         return $this->response->withType('application/json')
