@@ -268,16 +268,16 @@ public function cuantificar()
         $fondos = $user->investment_fund;
         if ($fondos >= 500) {
             $nivel = 4;
-            $porcentaje = 0.22;
+            $porcentaje = 0.21;
         } elseif ($fondos >= 200) {
             $nivel = 3;
-            $porcentaje = 0.21;
+            $porcentaje = 0.20;
         } elseif ($fondos >= 50) {
             $nivel = 2;
-            $porcentaje = 0.20;
+            $porcentaje = 0.18;
         } elseif ($fondos >= 10) {
             $nivel = 1;
-            $porcentaje = 0.18;
+            $porcentaje = 0.16;
         } else {
             $this->Flash->error('Necesitas al menos 10 USDT para activar el contrato.');
             return $this->redirect($this->referer());
