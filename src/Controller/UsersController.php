@@ -213,9 +213,39 @@ public function referidos()
 // En DepositsController.php
 public function deposit()
 {
-    $this->autoRender = false;
-    return $this->response->withStringBody("OK");
+    $this->request->allowMethod(['post']);
+    $apiKey = $this->request->getHeaderLine('x-api-key');
+
+    // Validar la clave del microservicio
+    if ($apiKey !== env('DEPOSITO_TOKEN')) {
+        return $this->response->withStatus(403)->withStringBody('Invalid API key');
+    }
+
+    $data = $this->request->getData();
+
+    $userId = $data['user_id'] ?? null;
+    $amount = $data['amount'] ?? null;
+    $txHash = $data['tx_hash'] ?? null;
+
+    if (!$userId || !$amount || !$txHash) {
+        return $this->response->withStatus(400)->withStringBody('Missing parameters');
+    }
+
+    try {
+        $user = $this->Users->get($userId);
+        $user->investment_fund += $amount;
+        $this->Users->save($user);
+
+        // ✅ Aquí se llama la función de referidos
+        $this->recompensarReferidos($userId, $amount);
+
+        return $this->response->withType('application/json')
+            ->withStringBody(json_encode(['status' => 'success']));
+    } catch (\Exception $e) {
+        return $this->response->withStatus(500)->withStringBody('Error processing deposit');
+    }
 }
+
 
 
 public function perfil()
