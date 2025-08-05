@@ -210,7 +210,7 @@ public function referidos()
 }
 
 
-// En DepositsController.php
+
 public function deposit()
 {
     $this->request->allowMethod(['post']);
