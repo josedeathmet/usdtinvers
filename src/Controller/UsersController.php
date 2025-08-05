@@ -211,6 +211,8 @@ public function referidos()
 
 
 
+
+
 public function deposit()
 {
     $this->request->allowMethod(['post']);
@@ -218,30 +220,39 @@ public function deposit()
 
     // Validar la clave del microservicio
     if ($apiKey !== env('DEPOSITO_TOKEN')) {
+        Log::write('error', '🔒 API Key inválida: ' . $apiKey);
         return $this->response->withStatus(403)->withStringBody('Invalid API key');
     }
 
     $data = $this->request->getData();
+    Log::write('debug', '📥 Datos recibidos: ' . json_encode($data));
 
     $userId = $data['user_id'] ?? null;
     $amount = $data['amount'] ?? null;
     $txHash = $data['tx_hash'] ?? null;
 
     if (!$userId || !$amount || !$txHash) {
+        Log::write('error', '❌ Faltan parámetros en la solicitud: ' . json_encode($data));
         return $this->response->withStatus(400)->withStringBody('Missing parameters');
     }
 
     try {
         $user = $this->Users->get($userId);
         $user->investment_fund += $amount;
-        $this->Users->save($user);
+        if ($this->Users->save($user)) {
+            Log::write('info', "💰 Fondos actualizados para el usuario $userId: +$amount USDT");
 
-        
-        $this->recompensarReferidos($userId, $amount);
-
-        return $this->response->withType('application/json')
-            ->withStringBody(json_encode(['status' => 'success']));
+            // Recompensar referidos
+            $this->recompensarReferidos($userId, $amount);
+            
+            return $this->response->withType('application/json')
+                ->withStringBody(json_encode(['status' => 'success']));
+        } else {
+            Log::write('error', "❌ Error guardando fondos del usuario $userId");
+            return $this->response->withStatus(500)->withStringBody('Error saving user');
+        }
     } catch (\Exception $e) {
+        Log::write('error', '💥 Excepción al procesar el depósito: ' . $e->getMessage());
         return $this->response->withStatus(500)->withStringBody('Error processing deposit');
     }
 }
