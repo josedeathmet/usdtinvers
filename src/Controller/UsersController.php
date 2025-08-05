@@ -213,50 +213,65 @@ public function referidos()
 
 
 
+
 public function deposit()
 {
     $this->request->allowMethod(['post']);
     $apiKey = $this->request->getHeaderLine('x-api-key');
 
-    // Validar la clave del microservicio
     if ($apiKey !== env('DEPOSITO_TOKEN')) {
         Log::write('error', '🔒 API Key inválida: ' . $apiKey);
         return $this->response->withStatus(403)->withStringBody('Invalid API key');
     }
 
     $data = $this->request->getData();
-    Log::write('debug', '📥 Datos recibidos: ' . json_encode($data));
+    Log::write('debug', '📥 Datos recibidos en webhook de depósito: ' . json_encode($data));
 
     $userId = $data['user_id'] ?? null;
     $amount = $data['amount'] ?? null;
     $txHash = $data['tx_hash'] ?? null;
 
     if (!$userId || !$amount || !$txHash) {
-        Log::write('error', '❌ Faltan parámetros en la solicitud: ' . json_encode($data));
+        Log::write('error', '❌ Faltan parámetros: ' . json_encode($data));
         return $this->response->withStatus(400)->withStringBody('Missing parameters');
     }
 
     try {
-        $user = $this->Users->get($userId);
-        $user->investment_fund += $amount;
-        if ($this->Users->save($user)) {
-            Log::write('info', "💰 Fondos actualizados para el usuario $userId: +$amount USDT");
+        // Verificar y obtener usuario
+        $user = $this->Users->find()->where(['id' => $userId])->first();
+        if (!$user) {
+            Log::write('error', "🧍 Usuario no encontrado: {$userId}");
+            return $this->response->withStatus(404)->withStringBody('User not found');
+        }
 
-            // Recompensar referidos
-            $this->recompensarReferidos($userId, $amount);
-            
-            return $this->response->withType('application/json')
-                ->withStringBody(json_encode(['status' => 'success']));
-        } else {
-            Log::write('error', "❌ Error guardando fondos del usuario $userId");
+        // Aquí podrías implementar idempotencia por tx_hash: guardar en una tabla de depósitos procesados
+        // y si ya existe ese txHash para ese userId, devolver éxito sin volver a aplicar.
+
+        // Sumar el fondo de inversión (asegurar cast float)
+        $user->investment_fund = (float)$user->investment_fund + (float)$amount;
+
+        if (!$this->Users->save($user)) {
+            Log::write('error', "❌ Falló al guardar el usuario {$userId} con nuevo balance.");
             return $this->response->withStatus(500)->withStringBody('Error saving user');
         }
-    } catch (\Exception $e) {
-        Log::write('error', '💥 Excepción al procesar el depósito: ' . $e->getMessage());
+
+        Log::write('info', "💰 Depósito aplicado: +{$amount} USDT a user_id={$userId}, tx={$txHash}");
+
+        // Intentar recompensar referidos, pero no hacer que falle todo si esa parte da error
+        try {
+            $this->recompensarReferidos($userId, $amount);
+        } catch (\Throwable $e) {
+            Log::write('error', "⚠️ Error en recompensarReferidos para user {$userId}: " . $e->getMessage());
+            // opcional: puedes seguir y devolver éxito igualmente
+        }
+
+        return $this->response->withType('application/json')
+            ->withStringBody(json_encode(['status' => 'success']));
+    } catch (\Throwable $e) {
+        Log::write('error', '💥 Excepción general en webhook de depósito: ' . $e->getMessage());
         return $this->response->withStatus(500)->withStringBody('Error processing deposit');
     }
 }
-
 
 
 public function perfil()
