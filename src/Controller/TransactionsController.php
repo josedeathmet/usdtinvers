@@ -178,34 +178,7 @@ if ($ultimoRetiro && $ultimoRetiro->created->format('Y-m-d') === $hoy) {
 }
    
     
-    private function recompensarReferidos($userId, $amount)
-{
-    $Users = TableRegistry::getTableLocator()->get('Users');
-    $user = $Users->get($userId);
-
-    $niveles = [0.10, 0.03, 0.01];
-    $codigo = $user->referred_by;
-
-    for ($i = 0; $i < 3 && $codigo; $i++) {
-        $ref = $Users->find()->where(['ref_code' => $codigo])->first();
-        if ($ref) {
-            $ganancia = $amount * $niveles[$i];
-            $ref->balance += $ganancia;
-            $ref->referral_earnings += $ganancia;
-            $Users->save($ref);
-
-            // (Opcional) Log para depurar
-            Log::write('info', "Nivel " . ($i + 1) . ": +$ganancia USDT para " . $ref->username);
-
-            // Siguiente nivel
-            $codigo = $ref->referred_by;
-        } else {
-            break;
-        }
-    }
-}
-
-
+   
     public function generarGananciasDiarias()
     {
         $this->request->allowMethod(['post']);
